@@ -104,10 +104,12 @@ export const powerupPrice = derived(
         if ($statePowerUp && $resourcesShifted) {
             const {
                 adjusted_utilization,
+                decay_secs,
                 exponent,
                 max_price,
                 min_price,
                 utilization,
+                utilization_timestamp,
                 weight,
             } = $statePowerUp.cpu
 
@@ -123,9 +125,20 @@ export const powerupPrice = derived(
             const mspdAvailable = mspd * (1 - $resourcesShifted / 100)
             const percentToRent = msToRent / mspdAvailable
 
-            // PowerUp System utilization before rental
-            const utilizationBefore =
+            // PowerUp System utilization before rental executes
+            let utilizationBefore =
                 Math.max(Number(utilization), Number(adjusted_utilization)) / Number(weight)
+
+            // If utilization is less than adjusted, calculate real time value
+            if (Number(utilization) < Number(adjusted_utilization)) {
+                const utilizationDiff = Number(adjusted_utilization) - Number(utilization)
+                const now: number = Date.now() / 1000 // Adjust JS timestamp to match EOSIO timestamp values
+                const then: number = Number(utilization_timestamp.value)
+                const decay: number = Number(decay_secs.value)
+                let utilizationDelta = utilizationDiff * Math.exp(-(now - then) / decay)
+                utilizationDelta = Math.min(Math.max(utilizationDelta, 0), utilizationDiff) // Clamp the delta
+                utilizationBefore = (Number(utilization) + utilizationDelta) / Number(weight)
+            }
 
             // PowerUp System utilization after rental
             const utilizationAfter = utilizationBefore + percentToRent
