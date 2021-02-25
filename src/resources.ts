@@ -86,13 +86,13 @@ export const powerupCapacity = derived(statePowerUp, ($statePowerUp) => {
     return 0
 })
 
+// The target weight for REX in the end of the transition (10^13 = 1% REX)
+export const resourcesShiftedREXTarget = Math.pow(10, 13)
+
 // The amount of resources shifted away from REX/Staking into PowerUp
 export const resourcesShifted = derived(statePowerUp, ($statePowerUp) => {
     if ($statePowerUp) {
-        return (
-            $statePowerUp.cpu.weight_ratio.toNumber() /
-            $statePowerUp.cpu.target_weight_ratio.toNumber()
-        )
+        return $statePowerUp.cpu.weight_ratio.toNumber() / resourcesShiftedREXTarget
     }
     return 0
 })
