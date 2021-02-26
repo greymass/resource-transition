@@ -1,7 +1,9 @@
 <script lang="ts">
+    import { Asset } from '@greymass/eosio'
     import {
         powerupCapacity,
         powerupPrice,
+        powerupPrice2,
         resourcesShifted,
         rexCapacity,
         rexPrice,
@@ -72,16 +74,29 @@
         {/if}
     </tr>
     <tr>
-        <td>PowerUp</td>
+        <td>PowerUp - Old Math</td>
         {#if $resourcesShifted}
             <td>{(100 - $resourcesShifted).toFixed(4)}%</td>
         {/if}
         {#if $powerupCapacity}
-            <td>{($powerupCapacity * 100).toFixed(2)}%</td>
+            <td>{($powerupCapacity * 100).toFixed(8)}%</td>
         {/if}
         {#if $powerupPrice}
-            <td>{$powerupPrice.toFixed(4)} EOS/1ms</td>
-            <td>{($powerupPrice * 30).toFixed(4)} EOS/1ms</td>
+            <td>{$powerupPrice}/1ms</td>
+            <td>{Asset.from($powerupPrice.value * 30, $powerupPrice.symbol)}/1ms</td>
+        {/if}
+    </tr>
+    <tr>
+        <td>PowerUp - New Math</td>
+        {#if $resourcesShifted}
+            <td>{(100 - $resourcesShifted).toFixed(4)}%</td>
+        {/if}
+        {#if $powerupCapacity}
+            <td>{($powerupCapacity * 100).toFixed(8)}%</td>
+        {/if}
+        {#if $powerupPrice2}
+            <td>{$powerupPrice2}/1ms</td>
+            <td>{Asset.from($powerupPrice2.value * 30, $powerupPrice2.symbol)}/1ms</td>
         {/if}
     </tr>
 </table>

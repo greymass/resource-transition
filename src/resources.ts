@@ -1,6 +1,6 @@
 import {derived, readable} from 'svelte/store'
 import {AccountResponse, loadAccount} from '~/account-cache'
-import {Checksum256, Name} from '@greymass/eosio'
+import {Asset, Checksum256, Name} from '@greymass/eosio'
 
 import {PowerUpState, REXState} from '~/abi-types'
 
@@ -80,8 +80,8 @@ export const statePowerUp = readable<PowerUpState | undefined>(undefined, (set) 
 // The currently utilized capacity of PowerUp resources
 export const powerupCapacity = derived(statePowerUp, ($statePowerUp) => {
     if ($statePowerUp) {
-        const {adjusted_utilization, utilization, weight} = $statePowerUp.cpu
-        return Math.max(Number(utilization), Number(adjusted_utilization)) / Number(weight)
+        const {utilization, weight} = $statePowerUp.cpu
+        return Number(utilization) / Number(weight)
     }
     return 0
 })
@@ -96,6 +96,92 @@ export const resourcesShifted = derived(statePowerUp, ($statePowerUp) => {
     }
     return 0
 })
+
+export const powerupPrice2 = derived(
+    [statePowerUp, resourcesShifted],
+    ([$statePowerUp, $resourcesShifted]) => {
+        if ($statePowerUp && $resourcesShifted) {
+            // Casting EOSIO types to usable formats for JS calculations
+            let adjusted_utilization: number = Number($statePowerUp.cpu.adjusted_utilization)
+            const decay_secs: number = Number($statePowerUp.cpu.decay_secs.value)
+            const exponent: number = Number($statePowerUp.cpu.exponent)
+            const max_price: number = $statePowerUp.cpu.max_price.value
+            const min_price: number = $statePowerUp.cpu.min_price.value
+            const utilization: number = Number($statePowerUp.cpu.utilization)
+            const utilization_timestamp: number = Number(
+                $statePowerUp.cpu.utilization_timestamp.value
+            )
+            const weight: number = Number($statePowerUp.cpu.weight)
+
+            // Milliseconds available per day available in PowerUp (factoring in shift)
+            const mspdAvailable = mspd * (1 - $resourcesShifted / 100)
+
+            // Rent 1ms of the networks CPU
+            const msToRent = 1
+
+            // Percentage to rent
+            const percentToRent = msToRent / mspdAvailable
+            const utilization_increase = weight * percentToRent
+
+            // If utilization is less than adjusted, calculate real time value
+            if (utilization < adjusted_utilization) {
+                // Create now & adjust JS timestamp to match EOSIO timestamp values
+                const now: number = Math.floor(Date.now() / 1000)
+                const diff: number = adjusted_utilization - utilization
+                let delta: number = Math.floor(
+                    diff * Math.exp(-(now - utilization_timestamp) / decay_secs)
+                )
+                delta = Math.min(Math.max(delta, 0), diff) // Clamp the delta
+                adjusted_utilization = utilization + delta
+            }
+
+            const price_integral_delta = (
+                start_utilization: number,
+                end_utilization: number
+            ): number => {
+                const coefficient = (max_price - min_price) / exponent
+                const start_u = start_utilization / weight
+                const end_u = end_utilization / weight
+                return (
+                    min_price * end_u -
+                    min_price * start_u +
+                    coefficient * Math.pow(end_u, exponent) -
+                    coefficient * Math.pow(start_u, exponent)
+                )
+            }
+
+            const price_function = (utilization: number): number => {
+                let price = min_price
+                const new_exponent = exponent - 1.0
+                if (new_exponent <= 0.0) {
+                    return max_price
+                } else {
+                    price += (max_price - min_price) * Math.pow(utilization / weight, new_exponent)
+                }
+                return price
+            }
+
+            let fee: number = 0.0
+            let start_utilization: number = utilization
+            const end_utilization: number = start_utilization + utilization_increase
+
+            if (start_utilization < adjusted_utilization) {
+                fee +=
+                    (price_function(adjusted_utilization) *
+                        Math.min(utilization_increase, adjusted_utilization - start_utilization)) /
+                    weight
+                start_utilization = adjusted_utilization
+            }
+
+            if (start_utilization < end_utilization) {
+                fee += price_integral_delta(start_utilization, end_utilization)
+            }
+
+            return Asset.from(fee, '4,EOS')
+        }
+        return Asset.from(0, '4,EOS')
+    }
+)
 
 // The price for 1ms of CPU in the PowerUp system
 export const powerupPrice = derived(
@@ -149,9 +235,9 @@ export const powerupPrice = derived(
                 coefficient * (Math.pow(utilizationAfter, exp) - Math.pow(utilizationBefore, exp))
 
             // Divide by 10000 for 4,EOS precision
-            return price / 10000
+            return Asset.fromUnits(price, '4,EOS')
         }
-        return 0
+        return Asset.fromUnits(0, '4,EOS')
     }
 )
 
