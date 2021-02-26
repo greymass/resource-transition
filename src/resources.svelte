@@ -66,7 +66,7 @@
             <td>{$resourcesShifted.toFixed(4)}%</td>
         {/if}
         {#if $rexCapacity}
-            <td>{($rexCapacity * 100).toFixed(2)}%</td>
+            <td>{($rexCapacity * 100).toFixed(4)}%</td>
         {/if}
         {#if $rexPrice}
             <td>{$rexPrice.toFixed(4)} EOS/1ms</td>
@@ -79,7 +79,7 @@
             <td>{(100 - $resourcesShifted).toFixed(4)}%</td>
         {/if}
         {#if $powerupCapacity}
-            <td>{($powerupCapacity * 100).toFixed(8)}%</td>
+            <td>{($powerupCapacity * 100).toFixed(4)}%</td>
         {/if}
         {#if $powerupPrice}
             <td>{$powerupPrice}/1ms</td>
@@ -92,7 +92,7 @@
             <td>{(100 - $resourcesShifted).toFixed(4)}%</td>
         {/if}
         {#if $powerupCapacity}
-            <td>{($powerupCapacity * 100).toFixed(8)}%</td>
+            <td>{($powerupCapacity * 100).toFixed(4)}%</td>
         {/if}
         {#if $powerupPrice2}
             <td>{$powerupPrice2}/1ms</td>
