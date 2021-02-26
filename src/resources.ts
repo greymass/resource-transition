@@ -1,4 +1,4 @@
-import {derived, readable} from 'svelte/store'
+import {derived, readable, writable} from 'svelte/store'
 import {AccountResponse, loadAccount} from '~/account-cache'
 import {Asset, Checksum256, Name} from '@greymass/eosio'
 
@@ -97,10 +97,13 @@ export const resourcesShifted = derived(statePowerUp, ($statePowerUp) => {
     return 0
 })
 
+// Rent 1ms of the networks CPU
+export const msToRent = writable<number>(1)
+
 export const powerupPrice2 = derived(
-    [statePowerUp, resourcesShifted],
-    ([$statePowerUp, $resourcesShifted]) => {
-        if ($statePowerUp && $resourcesShifted) {
+    [msToRent, statePowerUp, resourcesShifted],
+    ([$msToRent, $statePowerUp, $resourcesShifted]) => {
+        if ($msToRent && $statePowerUp && $resourcesShifted) {
             // Casting EOSIO types to usable formats for JS calculations
             let adjusted_utilization: number = Number($statePowerUp.cpu.adjusted_utilization)
             const decay_secs: number = Number($statePowerUp.cpu.decay_secs.value)
@@ -116,11 +119,8 @@ export const powerupPrice2 = derived(
             // Milliseconds available per day available in PowerUp (factoring in shift)
             const mspdAvailable = mspd * (1 - $resourcesShifted / 100)
 
-            // Rent 1ms of the networks CPU
-            const msToRent = 1
-
             // Percentage to rent
-            const percentToRent = msToRent / mspdAvailable
+            const percentToRent = $msToRent / mspdAvailable
             const utilization_increase = weight * percentToRent
 
             // If utilization is less than adjusted, calculate real time value
@@ -177,7 +177,8 @@ export const powerupPrice2 = derived(
                 fee += price_integral_delta(start_utilization, end_utilization)
             }
 
-            return Asset.from(fee, '4,EOS')
+            // Return the fee as an Asset
+            return Asset.fromUnits(Math.ceil(fee * 10000), '4,EOS')
         }
         return Asset.from(0, '4,EOS')
     }
@@ -185,8 +186,8 @@ export const powerupPrice2 = derived(
 
 // The price for 1ms of CPU in the PowerUp system
 export const powerupPrice = derived(
-    [statePowerUp, resourcesShifted],
-    ([$statePowerUp, $resourcesShifted]) => {
+    [msToRent, statePowerUp, resourcesShifted],
+    ([$msToRent, $statePowerUp, $resourcesShifted]) => {
         if ($statePowerUp && $resourcesShifted) {
             const {
                 adjusted_utilization,
@@ -204,12 +205,9 @@ export const powerupPrice = derived(
             const max = Number(max_price.units)
             const coefficient = (max - min) / exp
 
-            // Rent 1ms of the networks CPU
-            const msToRent = 1
-
             // Milliseconds available per day available in PowerUp (factoring in shift)
             const mspdAvailable = mspd * (1 - $resourcesShifted / 100)
-            const percentToRent = msToRent / mspdAvailable
+            const percentToRent = $msToRent / mspdAvailable
 
             // PowerUp System utilization before rental executes
             let utilizationBefore =
@@ -234,8 +232,8 @@ export const powerupPrice = derived(
                 min * (utilizationAfter - utilizationBefore) +
                 coefficient * (Math.pow(utilizationAfter, exp) - Math.pow(utilizationBefore, exp))
 
-            // Divide by 10000 for 4,EOS precision
-            return Asset.fromUnits(price, '4,EOS')
+            // Return the ceil of the price as an asset
+            return Asset.fromUnits(Math.ceil(price), '4,EOS')
         }
         return Asset.fromUnits(0, '4,EOS')
     }
@@ -270,9 +268,9 @@ export const rexCapacity = derived(stateREX, ($stateREX) => {
 
 // The price for 1ms of CPU in the REX system
 export const rexPrice = derived(
-    [sampledCpuCost, stateREX, resourcesShifted],
-    ([$sampledCpuCost, $stateREX, $resourcesShifted]) => {
-        if ($sampledCpuCost && $stateREX && $resourcesShifted) {
+    [msToRent, sampledCpuCost, stateREX, resourcesShifted],
+    ([$msToRent, $sampledCpuCost, $stateREX, $resourcesShifted]) => {
+        if ($msToRent && $sampledCpuCost && $stateREX && $resourcesShifted) {
             const totalRent = $stateREX.total_rent
             const totalUnlent = $stateREX.total_unlent
             const tokens = 1
@@ -280,7 +278,7 @@ export const rexPrice = derived(
                 (tokens / (totalRent.value / totalUnlent.value)) *
                 $sampledCpuCost *
                 ($resourcesShifted / 100)
-            return tokens / msPerToken
+            return (tokens / msPerToken) * $msToRent
         }
         return 0
     }

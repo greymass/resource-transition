@@ -1,6 +1,7 @@
 <script lang="ts">
-    import { Asset } from '@greymass/eosio'
+    import {Asset} from '@greymass/eosio'
     import {
+        msToRent,
         powerupCapacity,
         powerupPrice,
         powerupPrice2,
@@ -69,8 +70,8 @@
             <td>{($rexCapacity * 100).toFixed(4)}%</td>
         {/if}
         {#if $rexPrice}
-            <td>{$rexPrice.toFixed(4)} EOS/1ms</td>
-            <td>{$rexPrice.toFixed(4)} EOS/1ms</td>
+            <td>{$rexPrice.toFixed(4)} EOS/{$msToRent}ms</td>
+            <td>{$rexPrice.toFixed(4)} EOS/{$msToRent}ms</td>
         {/if}
     </tr>
     <tr>
@@ -82,8 +83,8 @@
             <td>{($powerupCapacity * 100).toFixed(4)}%</td>
         {/if}
         {#if $powerupPrice}
-            <td>{$powerupPrice}/1ms</td>
-            <td>{Asset.from($powerupPrice.value * 30, $powerupPrice.symbol)}/1ms</td>
+            <td>{$powerupPrice}/{$msToRent}ms</td>
+            <td>{Asset.from($powerupPrice.value * 30, $powerupPrice.symbol)}/{$msToRent}ms</td>
         {/if}
     </tr>
     <tr>
@@ -95,12 +96,15 @@
             <td>{($powerupCapacity * 100).toFixed(4)}%</td>
         {/if}
         {#if $powerupPrice2}
-            <td>{$powerupPrice2}/1ms</td>
-            <td>{Asset.from($powerupPrice2.value * 30, $powerupPrice2.symbol)}/1ms</td>
+            <td>{$powerupPrice2}/{$msToRent}ms</td>
+            <td>{Asset.from($powerupPrice2.value * 30, $powerupPrice2.symbol)}/{$msToRent}ms</td>
         {/if}
     </tr>
 </table>
 <div>
+    <p>Enter the number of milliseconds to rent:</p>
+    <input type="text" bind:value={$msToRent} />
+
     <p>Legend:</p>
     <ul>
         <li>

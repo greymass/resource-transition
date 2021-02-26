@@ -9,7 +9,7 @@
 
     main {
         padding: 1em;
-        max-width: 800px;
+        max-width: 1024px;
     }
 </style>
 
