@@ -70,7 +70,7 @@
             <td>{($rexCapacity * 100).toFixed(4)}%</td>
         {/if}
         {#if $rexPrice}
-            <td>{$rexPrice.toFixed(4)} EOS/{$msToRent}ms</td>
+            <td></td>
             <td>{$rexPrice.toFixed(4)} EOS/{$msToRent}ms</td>
         {/if}
     </tr>
@@ -120,7 +120,7 @@
             day from the system.
         </li>
         <li>
-            <strong>30-day cost</strong>: The cost if you were to rent 1 millisecond of CPU* for 30
+            <strong>30-day cost</strong>: The cost if you were to rent 1 millisecond of CPU* per day for 30
             days from the system.
         </li>
     </ul>
