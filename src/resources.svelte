@@ -4,7 +4,6 @@
         msToRent,
         powerupCapacity,
         powerupPrice,
-        powerupPrice2,
         resourcesShifted,
         rexCapacity,
         rexPrice,
@@ -64,40 +63,27 @@
     <tr>
         <td>REX (+Staking)</td>
         {#if $resourcesShifted}
-            <td>{$resourcesShifted.toFixed(4)}%</td>
+            <td>{(100 - Number($resourcesShifted) * 100).toFixed(4)}%</td>
         {/if}
         {#if $rexCapacity}
-            <td>{($rexCapacity * 100).toFixed(4)}%</td>
+            <td>{(Number($rexCapacity) * 100).toFixed(4)}%</td>
         {/if}
         {#if $rexPrice}
-            <td></td>
-            <td>{$rexPrice.toFixed(4)} EOS/{$msToRent}ms</td>
+            <td />
+            <td>{$rexPrice}/{$msToRent}ms</td>
         {/if}
     </tr>
     <tr>
-        <td>PowerUp - Old Math</td>
+        <td>PowerUp</td>
         {#if $resourcesShifted}
-            <td>{(100 - $resourcesShifted).toFixed(4)}%</td>
+            <td>{(Number($resourcesShifted) * 100).toFixed(4)}%</td>
         {/if}
         {#if $powerupCapacity}
-            <td>{($powerupCapacity * 100).toFixed(4)}%</td>
+            <td>{(Number($powerupCapacity) * 100).toFixed(4)}%</td>
         {/if}
         {#if $powerupPrice}
             <td>{$powerupPrice}/{$msToRent}ms</td>
             <td>{Asset.from($powerupPrice.value * 30, $powerupPrice.symbol)}/{$msToRent}ms</td>
-        {/if}
-    </tr>
-    <tr>
-        <td>PowerUp - New Math</td>
-        {#if $resourcesShifted}
-            <td>{(100 - $resourcesShifted).toFixed(4)}%</td>
-        {/if}
-        {#if $powerupCapacity}
-            <td>{($powerupCapacity * 100).toFixed(4)}%</td>
-        {/if}
-        {#if $powerupPrice2}
-            <td>{$powerupPrice2}/{$msToRent}ms</td>
-            <td>{Asset.from($powerupPrice2.value * 30, $powerupPrice2.symbol)}/{$msToRent}ms</td>
         {/if}
     </tr>
 </table>
@@ -120,8 +106,8 @@
             day from the system.
         </li>
         <li>
-            <strong>30-day cost</strong>: The cost if you were to rent 1 millisecond of CPU* per day for 30
-            days from the system.
+            <strong>30-day cost</strong>: The cost if you were to rent 1 millisecond of CPU* per day
+            for 30 days from the system.
         </li>
     </ul>
     <p><em>* 1 millisecond of CPU is equal to ~4-5x EOS token transfers.</em></p>
