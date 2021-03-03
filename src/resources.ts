@@ -1,13 +1,12 @@
 import {derived, readable, writable} from 'svelte/store'
 
 import {Asset} from '@greymass/eosio'
-import type {SampleUsage} from '@greymass/eosio-resources'
+import type {SampleUsage, PowerUpState, REXState} from '@greymass/eosio-resources'
 
-import type {PowerUpState, REXState} from '~/abi-types'
 import {resources} from './api-client'
 
 // The AccountResponse representation of the sample account
-export const sampleUsage = readable<SampleUsage>({cpu: 100, net: 100}, (set) => {
+export const sampleUsage = readable<SampleUsage | undefined>(undefined, (set) => {
     resources.getSampledUsage().then((v) => set(v))
 
     const interval = setInterval(async () => resources.getSampledUsage().then((v) => set(v)), 30000)
@@ -32,7 +31,7 @@ export const statePowerUp = readable<PowerUpState | undefined>(undefined, (set) 
 // The currently utilized capacity of PowerUp resources
 export const powerupCapacity = derived(statePowerUp, ($statePowerUp) => {
     if ($statePowerUp) {
-        return resources.v1.powerup.get_reserved($statePowerUp, 'cpu')
+        return $statePowerUp.cpu.reserved
     }
     return 0
 })
@@ -40,7 +39,7 @@ export const powerupCapacity = derived(statePowerUp, ($statePowerUp) => {
 // The amount of resources shifted away from REX/Staking into PowerUp
 export const resourcesShifted = derived(statePowerUp, ($statePowerUp) => {
     if ($statePowerUp) {
-        return resources.v1.powerup.get_allocated($statePowerUp)
+        return $statePowerUp.cpu.allocated
     }
     return 0
 })
@@ -50,7 +49,7 @@ export const msToRent = writable<number>(1)
 
 export const powerupPrice = derived([msToRent, statePowerUp], ([$msToRent, $statePowerUp]) => {
     if ($msToRent && $statePowerUp) {
-        return resources.v1.powerup.get_price_per_ms($statePowerUp, $msToRent)
+        return $statePowerUp.cpu.price_per_ms($msToRent)
     }
     return Asset.from(0, '4,EOS')
 })
@@ -69,7 +68,7 @@ export const stateREX = readable<REXState | undefined>(undefined, (set) => {
 // The current amount of reserved REX resources
 export const rexCapacity = derived(stateREX, ($stateREX) => {
     if ($stateREX) {
-        return resources.v1.rex.get_reserved($stateREX)
+        return $stateREX.reserved
     }
     return 0
 })
@@ -79,7 +78,7 @@ export const rexPrice = derived(
     [msToRent, sampleUsage, stateREX],
     ([$msToRent, $sampleUsage, $stateREX]) => {
         if ($msToRent && $sampleUsage && $stateREX) {
-            return resources.v1.rex.get_price_per_ms($stateREX, $sampleUsage, $msToRent)
+            return $stateREX.price_per_ms($sampleUsage, $msToRent)
         }
         return 0
     }
