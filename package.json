@@ -12,7 +12,7 @@
     },
     "dependencies": {
         "@greymass/eosio": "0.3.2",
-        "@greymass/eosio-resources": "0.1.1",
+        "@greymass/eosio-resources": "0.2.0",
         "idb": "^6.0.0",
         "tinro": "^0.5.6"
     },

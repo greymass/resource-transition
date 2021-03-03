@@ -49,7 +49,7 @@ export const msToRent = writable<number>(1)
 
 export const powerupPrice = derived([msToRent, statePowerUp], ([$msToRent, $statePowerUp]) => {
     if ($msToRent && $statePowerUp) {
-        return $statePowerUp.cpu.price_per_ms($msToRent)
+        return Asset.from($statePowerUp.cpu.price_per_ms($msToRent), '4,EOS')
     }
     return Asset.from(0, '4,EOS')
 })
