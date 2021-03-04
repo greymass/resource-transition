@@ -845,10 +845,10 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@greymass/eosio-resources@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@greymass/eosio-resources/-/eosio-resources-0.2.0.tgz#ad493f7e8af42ea038918d565238f1983c401469"
-  integrity sha512-t7BEcZ71zkxihKrHOAGvY+rSMESZhvvPOambSJY17B/06w++ilPH1OLQAqGe6t83wD1TeIjUrxv8IPZ4zGUZNg==
+"@greymass/eosio-resources@0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@greymass/eosio-resources/-/eosio-resources-0.2.3.tgz#3d17ed7bce2d1c7415b98e0aefdec82989799394"
+  integrity sha512-3fteWfRcRLydUQc+k4hfhX+ovPDlq/FCbkWbGjTfHYzRqmme8iP10ApXpeWQDsF9dv7HgFK4uAX7nwcq4awF6Q==
   dependencies:
     "@greymass/eosio" "^0.3.2"
     tslib "^2.1.0"

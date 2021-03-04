@@ -78,8 +78,8 @@ export const rexPrice = derived(
     [msToRent, sampleUsage, stateREX],
     ([$msToRent, $sampleUsage, $stateREX]) => {
         if ($msToRent && $sampleUsage && $stateREX) {
-            return $stateREX.price_per_ms($sampleUsage, $msToRent)
+            return Asset.from($stateREX.price_per_ms($sampleUsage, $msToRent), '4,EOS')
         }
-        return 0
+        return Asset.from(0, '4,EOS')
     }
 )
