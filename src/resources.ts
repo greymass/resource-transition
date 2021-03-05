@@ -28,6 +28,17 @@ export const statePowerUp = readable<PowerUpState | undefined>(undefined, (set) 
     }
 })
 
+export const getInfo = async (set: (v: any) => void) => set(await resources.api.v1.chain.get_info())
+
+// The state of the PowerUp system
+export const info = readable<any>(undefined, (set) => {
+    getInfo(set)
+    const interval = setInterval(() => getInfo(set), 30000)
+    return () => {
+        clearInterval(interval)
+    }
+})
+
 // The currently utilized capacity of PowerUp resources
 export const powerupCapacity = derived(statePowerUp, ($statePowerUp) => {
     if ($statePowerUp) {
@@ -47,12 +58,15 @@ export const resourcesShifted = derived(statePowerUp, ($statePowerUp) => {
 // Rent 1ms of the networks CPU
 export const msToRent = writable<number>(1)
 
-export const powerupPrice = derived([msToRent, statePowerUp], ([$msToRent, $statePowerUp]) => {
-    if ($msToRent && $statePowerUp) {
-        return Asset.from($statePowerUp.cpu.price_per_ms($msToRent), '4,EOS')
+export const powerupPrice = derived(
+    [msToRent, statePowerUp, info],
+    ([$msToRent, $statePowerUp, $info]) => {
+        if ($msToRent && $statePowerUp && $info) {
+            return Asset.from($statePowerUp.cpu.price_per_ms($msToRent, $info), '4,EOS')
+        }
+        return Asset.from(0, '4,EOS')
     }
-    return Asset.from(0, '4,EOS')
-})
+)
 
 export const getREXState = async (set: (v: any) => void) => set(await resources.v1.rex.get_state())
 
