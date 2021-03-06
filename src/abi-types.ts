@@ -1,4 +1,14 @@
-import {Asset, Float64, Int64, Struct, TimePointSec, UInt8, UInt32, UInt64} from '@greymass/eosio'
+import {
+    Asset,
+    Float64,
+    Int64,
+    Name,
+    Struct,
+    TimePointSec,
+    UInt8,
+    UInt32,
+    UInt64,
+} from '@greymass/eosio'
 
 @Struct.type('powerupstateresource')
 export class PowerUpStateResource extends Struct {
@@ -38,4 +48,14 @@ export class REXState extends Struct {
     @Struct.field('asset') total_rex!: Asset
     @Struct.field('asset') namebid_proceeds!: Asset
     @Struct.field('uint64') loan_num!: UInt64
+}
+
+@Struct.type('powerup')
+export class Powerup extends Struct {
+    @Struct.field('name') payer!: Name
+    @Struct.field('name') receiver!: Name
+    @Struct.field('uint32') days!: UInt32
+    @Struct.field('uint64') net_frac!: UInt64
+    @Struct.field('uint64') cpu_frac!: UInt64
+    @Struct.field('asset') max_payment!: Asset
 }
