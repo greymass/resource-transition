@@ -59,10 +59,13 @@ export const resourcesShifted = derived(statePowerUp, ($statePowerUp) => {
 export const msToRent = writable<number>(1)
 
 export const powerupPrice = derived(
-    [msToRent, statePowerUp, info],
-    ([$msToRent, $statePowerUp, $info]) => {
-        if ($msToRent && $statePowerUp && $info) {
-            return Asset.from($statePowerUp.cpu.price_per_ms($msToRent, $info), '4,EOS')
+    [msToRent, sampleUsage, statePowerUp, info],
+    ([$msToRent, $sampleUsage, $statePowerUp, $info]) => {
+        if ($msToRent && $sampleUsage && $statePowerUp && $info) {
+            return Asset.from(
+                $statePowerUp.cpu.price_per_ms($sampleUsage, $msToRent, $info),
+                '4,EOS'
+            )
         }
         return Asset.from(0, '4,EOS')
     }
