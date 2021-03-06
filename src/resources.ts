@@ -1,5 +1,27 @@
 import {derived, readable, writable} from 'svelte/store'
 
+import Link, {ChainId} from 'anchor-link'
+import Transport from 'anchor-link-browser-transport'
+
+export const appName = 'exampleapp'
+export const chainId = ChainId.from(
+    'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
+)
+export const nodeUrl = 'https://eos.greymass.com'
+
+const chains = [
+    {
+        chainId,
+        nodeUrl,
+    },
+]
+
+const transport = new Transport()
+export const link = new Link({
+    chains,
+    transport,
+})
+
 import {Asset} from '@greymass/eosio'
 import type {SampleUsage, PowerUpState, REXState} from '@greymass/eosio-resources'
 
