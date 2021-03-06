@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { onMount } from 'svelte'
+    import {onMount} from 'svelte'
     import AnchorLink, {Asset, ChainId} from 'anchor-link'
     import type {TransactResult} from 'anchor-link'
     import AnchorLinkBrowserTransport from 'anchor-link-browser-transport'
     import type {LinkSession} from 'anchor-link'
 
-    import { Powerup } from '~/abi-types'
+    import {Powerup} from '~/abi-types'
     import {
         info,
         msToRent,
@@ -29,18 +29,18 @@
             {
                 chainId,
                 nodeUrl,
-            }
+            },
         ],
     })
 
     let session: LinkSession | null
 
-	onMount(async () => {
+    onMount(async () => {
         session = await link.restoreSession(appName)
-	});
+    })
 
     async function login() {
-        ({session} = await link.login(appName))
+        ;({session} = await link.login(appName))
     }
 
     async function logout() {
@@ -54,7 +54,7 @@
 
     async function rent() {
         transaction = null
-        if (session) {
+        if (session && $statePowerUp && $sampleUsage) {
             const us = $msToRent * 1000
             // Retrieve the cost for the specified amount of microseconds
             const cost = $statePowerUp.cpu.price_per($sampleUsage, us, $info)
@@ -62,28 +62,30 @@
             // Specify the cost as the max payment (as an Asset)
             const max_payment = Asset.from(cost, '4,EOS')
 
-            // Determine the cpu_frac value based on the max_payment 
-            const cpu_frac = $statePowerUp.cpu.frac($sampleUsage, us, $info);
+            // Determine the cpu_frac value based on the max_payment
+            const cpu_frac = $statePowerUp.cpu.frac($sampleUsage, us)
 
             // Create the action
             const action = {
                 account: 'eosio',
                 name: 'powerup',
-                authorization: [{
-                    actor: session.auth.actor,
-                    permission: session.auth.permission
-                }],
+                authorization: [
+                    {
+                        actor: session.auth.actor,
+                        permission: session.auth.permission,
+                    },
+                ],
                 data: Powerup.from({
                     payer: session.auth.actor,
                     receiver: session.auth.actor,
                     days: $statePowerUp.powerup_days,
                     net_frac: 0,
                     cpu_frac,
-                    max_payment
-                })
+                    max_payment,
+                }),
             }
             // Send the action to the wallet and store the response
-            transaction = await session.transact({ action })
+            transaction = await session.transact({action})
         }
     }
 </script>
@@ -131,7 +133,7 @@
 <div>
     <p>Enter the number of milliseconds to rent:</p>
     <input type="text" bind:value={$msToRent} />
-    {#if session} 
+    {#if session}
         <button on:click={rent}>Rent CPU via PowerUp</button>
         <button on:click={logout}>Logout ({session.auth.actor})</button>
         <p>Price to pay: {$powerupPrice}</p>
@@ -140,7 +142,9 @@
     {/if}
     {#if transaction && transaction.processed}
         <p>
-            Transaction ID: <a href="https://bloks.io/transaction/{transaction.processed.id}">{transaction.processed.id}</a>
+            Transaction ID: <a href="https://bloks.io/transaction/{transaction.processed.id}"
+                >{transaction.processed.id}</a
+            >
         </p>
     {/if}
 </div>
