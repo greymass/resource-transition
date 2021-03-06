@@ -1,9 +1,9 @@
 <script lang="ts">
     import {onMount} from 'svelte'
-    import AnchorLink, {Asset, ChainId} from 'anchor-link'
-    import type {TransactResult} from 'anchor-link'
-    import AnchorLinkBrowserTransport from 'anchor-link-browser-transport'
-    import type {LinkSession} from 'anchor-link'
+
+    import Link, {Asset, ChainId} from 'anchor-link'
+    import type {LinkSession, TransactResult} from 'anchor-link'
+    import Transport from 'anchor-link-browser-transport'
 
     import {Powerup} from '~/abi-types'
     import {
@@ -22,15 +22,17 @@
     const chainId = ChainId.from('aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906')
     const nodeUrl = 'https://eos.greymass.com'
 
-    const transport = new AnchorLinkBrowserTransport()
-    const link = new AnchorLink({
+    const chains = [
+        {
+            chainId,
+            nodeUrl,
+        },
+    ]
+
+    const transport = new Transport()
+    const link = new Link({
+        chains,
         transport,
-        chains: [
-            {
-                chainId,
-                nodeUrl,
-            },
-        ],
     })
 
     let session: LinkSession | null
